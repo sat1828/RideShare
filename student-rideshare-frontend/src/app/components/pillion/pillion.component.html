@@ -1,0 +1,217 @@
+
+
+<div class="h-screen bg-gray-900 text-white flex flex-col md:flex-row">
+  <!-- Map Section -->
+  <div class="flex-grow flex flex-col p-4 md:p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Find a Ride</h1>
+      <button (click)="goBack()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
+        ← Back
+      </button>
+    </div>
+    <div id="pillion-map" class="w-full h-full bg-gray-800 rounded-xl shadow-lg"></div>
+  </div>
+
+  <!-- Controls Section -->
+  <div class="w-full md:w-96 bg-gray-800 p-6 overflow-y-auto space-y-6">
+    <h2 class="text-xl font-semibold text-teal-400">Search for Rides</h2>
+
+    <form [formGroup]="searchForm" class="space-y-4">
+      <!-- Pickup Location -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">Pickup Location</label>
+        <input 
+          type="text" 
+          formControlName="pickupSearch"
+          (input)="searchPickupLocation($event)"
+          (focus)="enablePickupLocationSetting()"
+          placeholder="Search or click map"
+          class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500">
+        
+        <div *ngIf="pickupSearchResults.length > 0" class="mt-2 bg-gray-700 rounded-lg max-h-40 overflow-y-auto">
+          <div *ngFor="let result of pickupSearchResults" 
+               (click)="selectPickupResult(result)"
+               class="p-2 hover:bg-gray-600 cursor-pointer text-sm border-b border-gray-600 last:border-0">
+            {{ result.display_name }}
+          </div>
+        </div>
+        
+        <p *ngIf="pickupLocation" class="mt-1 text-xs text-green-400">
+          ✓ Location set: {{ pickupLocation.lat.toFixed(4) }}, {{ pickupLocation.lng.toFixed(4) }}
+        </p>
+      </div>
+
+      <!-- Drop Location -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">Drop Location</label>
+        <input 
+          type="text" 
+          formControlName="dropSearch"
+          (input)="searchDropLocation($event)"
+          (focus)="enableDropLocationSetting()"
+          placeholder="Search or click map"
+          class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500">
+        
+        <div *ngIf="dropSearchResults.length > 0" class="mt-2 bg-gray-700 rounded-lg max-h-40 overflow-y-auto">
+          <div *ngFor="let result of dropSearchResults" 
+               (click)="selectDropResult(result)"
+               class="p-2 hover:bg-gray-600 cursor-pointer text-sm border-b border-gray-600 last:border-0">
+            {{ result.display_name }}
+          </div>
+        </div>
+        
+        <p *ngIf="dropLocation" class="mt-1 text-xs text-green-400">
+          ✓ Location set: {{ dropLocation.lat.toFixed(4) }}, {{ dropLocation.lng.toFixed(4) }}
+        </p>
+      </div>
+
+      <!-- Departure Time (Optional) -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">
+          Preferred Departure Time (Optional)
+        </label>
+        <input 
+          type="datetime-local" 
+          formControlName="departureTime"
+          class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white focus:ring-2 focus:ring-teal-500">
+        <p class="mt-1 text-xs text-gray-400">
+          Leave blank to see rides in the next 24 hours
+        </p>
+      </div>
+
+      <!-- Search Button -->
+      <button 
+        type="button"
+        (click)="searchRides()"
+        [disabled]="!pickupLocation || !dropLocation || isSearching"
+        class="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg">
+        <span *ngIf="!isSearching">🔍 Search for Riders</span>
+        <span *ngIf="isSearching">Searching...</span>
+      </button>
+    </form>
+
+    <!-- Alerts -->
+    <div *ngIf="errorMessage" class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="successMessage" class="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg text-sm">
+      {{ successMessage }}
+    </div>
+
+    <!-- Time Filter Buttons -->
+    <div *ngIf="showTimeFilter && availableRides.length > 0" class="space-y-3">
+      <h3 class="text-sm font-semibold text-gray-300">Filter by Time</h3>
+      <div class="grid grid-cols-2 gap-2">
+        <button 
+          (click)="applyTimeFilter('all')"
+          [class.bg-teal-600]="selectedTimeFilter === 'all'"
+          [class.bg-gray-700]="selectedTimeFilter !== 'all'"
+          class="px-3 py-2 rounded text-sm font-medium hover:bg-teal-500 transition-colors">
+          All ({{ availableRides.length }})
+        </button>
+        <button 
+          (click)="applyTimeFilter('next1h')"
+          [class.bg-teal-600]="selectedTimeFilter === 'next1h'"
+          [class.bg-gray-700]="selectedTimeFilter !== 'next1h'"
+          class="px-3 py-2 rounded text-sm font-medium hover:bg-teal-500 transition-colors">
+          Next 1hr
+        </button>
+        <button 
+          (click)="applyTimeFilter('next3h')"
+          [class.bg-teal-600]="selectedTimeFilter === 'next3h'"
+          [class.bg-gray-700]="selectedTimeFilter !== 'next3h'"
+          class="px-3 py-2 rounded text-sm font-medium hover:bg-teal-500 transition-colors">
+          Next 3hrs
+        </button>
+        <button 
+          (click)="applyTimeFilter('today')"
+          [class.bg-teal-600]="selectedTimeFilter === 'today'"
+          [class.bg-gray-700]="selectedTimeFilter !== 'today'"
+          class="px-3 py-2 rounded text-sm font-medium hover:bg-teal-500 transition-colors">
+          Today
+        </button>
+      </div>
+    </div>
+
+    <!-- Available Rides -->
+    <div *ngIf="filteredRides.length > 0" class="space-y-3">
+      <h3 class="text-lg font-semibold">Available Rides ({{ filteredRides.length }})</h3>
+      
+      <div *ngFor="let ride of filteredRides" 
+           (click)="selectRide(ride)"
+           [class.ring-2]="selectedRide?.id === ride.id"
+           [class.ring-teal-500]="selectedRide?.id === ride.id"
+           [class.bg-teal-900]="selectedRide?.id === ride.id"
+           class="bg-gray-700 p-4 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <p class="font-semibold text-lg text-teal-400">₹{{ ride.price }}</p>
+            <p class="text-sm text-gray-400">by {{ ride.riderName || 'Rider' }}</p>
+          </div>
+          <div class="text-right">
+            <span class="px-2 py-1 text-xs bg-green-500 rounded block mb-1">
+              {{ ride.availableSeats }} seat(s)
+            </span>
+            <span class="text-xs text-gray-400">
+              {{ getRideTimeStatus(ride.departureTime) }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="space-y-1 mb-2">
+          <p class="text-sm text-gray-300 truncate">
+            📍 <span class="font-medium">From:</span> {{ ride.startLocation.address || 'Location set' }}
+          </p>
+          <p class="text-sm text-gray-300 truncate">
+            🎯 <span class="font-medium">To:</span> {{ ride.endLocation.address || 'Location set' }}
+          </p>
+        </div>
+        
+        <div class="flex items-center justify-between pt-2 border-t border-gray-600">
+          <p class="text-xs text-gray-400">
+            🕐 {{ ride.departureTime | date:'MMM d, h:mm a' }}
+          </p>
+          <button 
+            *ngIf="selectedRide?.id === ride.id"
+            (click)="bookRide(); $event.stopPropagation()"
+            [disabled]="isBooking"
+            class="px-3 py-1 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs font-bold rounded transition-colors">
+            <span *ngIf="!isBooking">Book Now</span>
+            <span *ngIf="isBooking">Booking...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results Message -->
+    <div *ngIf="availableRides.length > 0 && filteredRides.length === 0" 
+         class="text-center py-8 text-gray-400">
+      <p class="text-lg mb-2">No rides in this timeframe</p>
+      <p class="text-sm">Try selecting a different time filter</p>
+    </div>
+
+    <!-- Legend -->
+    <div class="border-t border-gray-700 pt-4">
+      <h3 class="text-sm font-semibold mb-2">Map Legend</h3>
+      <div class="space-y-2 text-xs">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-teal-400"></div>
+          <span>Your Pickup</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-pink-400"></div>
+          <span>Your Drop</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-yellow-400 border border-white"></div>
+          <span>500m Search Range</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-1 bg-indigo-400"></div>
+          <span>Rider Routes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

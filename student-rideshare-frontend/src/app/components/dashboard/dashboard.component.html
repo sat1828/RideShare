@@ -1,0 +1,305 @@
+<div class="min-h-screen bg-gray-900 text-white relative overflow-hidden">
+  <!-- Animated Background -->
+  <div class="bg-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="glass-card sticky top-0 z-50 border-b-0 rounded-none">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-20">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center float-animation">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold gradient-text">RideShare</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="text-right hidden sm:block">
+            <p class="text-sm text-gray-400">Welcome back</p>
+            <p class="font-semibold text-white">{{ currentUser?.username }}</p>
+          </div>
+          <div class="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full text-xs font-bold shimmer">
+            {{ currentUser?.role }}
+          </div>
+          <button (click)="logout()" 
+                  class="btn-gradient-danger px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            <span class="hidden sm:inline">Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+    
+    <!-- Welcome Section -->
+    <div class="mb-8 slide-in-left">
+      <h2 class="text-5xl font-bold mb-3 neon-glow">
+        Welcome back, <span class="gradient-text">{{ currentUser?.username }}</span>!
+      </h2>
+      <p class="text-gray-400 text-lg">Ready to hit the road? Let's get started.</p>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+      
+      <!-- Offer Ride Card -->
+      <div *ngIf="canBeRider()" 
+           (click)="goToRider()"
+           class="glass-card card-hover-lift cursor-pointer p-8 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full filter blur-3xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+        <div class="relative z-10">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center float-animation">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+            </div>
+            <div *ngIf="pendingBookingsCount > 0" 
+                 class="badge-glow-yellow px-4 py-2 rounded-full text-black text-sm font-bold badge-animated flex items-center gap-2">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path>
+              </svg>
+              {{ pendingBookingsCount }} new!
+            </div>
+          </div>
+          <h3 class="text-3xl font-bold mb-2 text-white">Offer a Ride</h3>
+          <p class="text-indigo-200 mb-4">Share your journey and earn money while helping fellow students</p>
+          <div class="flex items-center text-indigo-300 font-medium group-hover:translate-x-2 transition-transform">
+            <span>Get started</span>
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Find Ride Card -->
+      <div *ngIf="canBePillion()" 
+           (click)="goToPillion()"
+           class="glass-card card-hover-lift cursor-pointer p-8 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500 rounded-full filter blur-3xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+        <div class="relative z-10">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center float-animation mb-4">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-3xl font-bold mb-2 text-white">Find a Ride</h3>
+          <p class="text-teal-200 mb-4">Get to your destination affordably and connect with fellow travelers</p>
+          <div class="flex items-center text-teal-300 font-medium group-hover:translate-x-2 transition-transform">
+            <span>Search rides</span>
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- LEFT COLUMN -->
+      <div class="space-y-8 slide-in-left">
+        
+        <!-- My Active Rides -->
+        <div class="glass-card p-6 neon-border">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                </svg>
+              </div>
+              <span class="gradient-text">My Rides</span>
+            </h3>
+            <div class="px-3 py-1 bg-indigo-500/20 rounded-full text-indigo-300 text-sm font-bold">
+              {{ myRides.length }}
+            </div>
+          </div>
+          
+          <div *ngIf="isLoading" class="flex justify-center py-12">
+            <div class="spinner"></div>
+          </div>
+          
+          <div *ngIf="!isLoading && myRides.length === 0" class="text-center py-12">
+            <div class="w-20 h-20 rounded-full bg-gray-700/50 flex items-center justify-center mx-auto mb-4">
+              <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            </div>
+            <p class="text-gray-400 mb-3">No active rides yet</p>
+            <button (click)="goToRider()" class="btn-gradient-primary px-6 py-2 rounded-xl font-semibold">
+              Create your first ride
+            </button>
+          </div>
+          
+          <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+            <div *ngFor="let ride of myRides" class="glass-card p-5 scale-in card-hover-lift border-l-4"
+                 [class.border-green-500]="ride.status === 'ACTIVE'"
+                 [class.border-gray-500]="ride.status === 'COMPLETED'"
+                 [class.border-red-500]="ride.status === 'CANCELLED'">
+              
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <p class="text-3xl font-bold gradient-text mb-1">₹{{ ride.price }}</p>
+                  <p class="text-sm text-gray-400 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ ride.departureTime | date:'MMM d, h:mm a' }}
+                  </p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-bold" 
+                      [class]="ride.status === 'ACTIVE' ? 'status-confirmed' : 
+                               ride.status === 'CANCELLED' ? 'status-rejected' : 
+                               'bg-gray-600'">
+                  {{ ride.status }}
+                </span>
+              </div>
+              
+              <div class="space-y-2 mb-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                    </svg>
+                  </div>
+                  <p class="text-sm text-gray-300 flex-1">{{ ride.startLocation.address || 'Start location set' }}</p>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                    </svg>
+                  </div>
+                  <p class="text-sm text-gray-300 flex-1">{{ ride.endLocation.address || 'End location set' }}</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between pt-3 border-t border-gray-700">
+                <p class="text-xs text-gray-400 flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  </svg>
+                  {{ ride.availableSeats }} seat(s)
+                </p>
+                <button *ngIf="ride.status === 'ACTIVE'" 
+                        (click)="cancelRide(ride.id!)"
+                        class="btn-gradient-danger px-4 py-2 rounded-lg text-sm font-bold">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Booking Requests (Continued in next message due to length) -->
+      </div>
+
+      <!-- RIGHT COLUMN: My Bookings -->
+      <div class="slide-in-right">
+        <div *ngIf="canBePillion()" class="glass-card p-6 neon-border sticky top-28">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                </svg>
+              </div>
+              <span class="gradient-text">My Bookings</span>
+            </h3>
+            <div class="px-3 py-1 bg-teal-500/20 rounded-full text-teal-300 text-sm font-bold">
+              {{ myBookings.length }}
+            </div>
+          </div>
+          
+          <!-- Similar structure for bookings... -->
+        </div>
+      </div>
+      <div *ngIf="canBeRider()" class="bg-gray-800 rounded-xl shadow-lg p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-yellow-400">Booking Requests</h3>
+            <span *ngIf="pendingBookingsCount > 0" 
+                  class="px-2 py-1 bg-yellow-500 text-black rounded-full text-sm font-bold animate-pulse">
+              {{ pendingBookingsCount }} pending
+            </span>
+          </div>
+          
+          <div *ngIf="incomingBookings.length === 0" class="text-center py-8 text-gray-400">
+            <p class="mb-2">No booking requests yet</p>
+            <p class="text-sm">When students book your rides, they'll appear here</p>
+          </div>
+          
+          <div class="space-y-3 max-h-96 overflow-y-auto">
+            <div *ngFor="let booking of incomingBookings" 
+                 class="bg-gray-700 p-4 rounded-lg border-l-4 transition-colors"
+                 [ngClass]="{
+                   'border-yellow-500 bg-yellow-900/20': booking.status === 'PENDING',
+                   'border-green-500 bg-green-900/20': booking.status === 'CONFIRMED',
+                   'border-red-500 bg-red-900/20': booking.status === 'REJECTED'
+                 }">
+              
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="font-bold text-white">{{ booking.pillionName }}</p>
+                  <p class="text-xs text-gray-400">{{ booking.bookingTime | date:'MMM d, h:mm a' }}</p>
+                </div>
+                <span class="px-2 py-1 text-xs rounded font-bold" 
+                      [ngClass]="{
+                        'bg-yellow-500 text-black': booking.status === 'PENDING',
+                        'bg-green-500 text-white': booking.status === 'CONFIRMED',
+                        'bg-red-500 text-white': booking.status === 'REJECTED'
+                      }">
+                  {{ booking.status }}
+                </span>
+              </div>
+              
+              <div class="text-sm space-y-1 mb-3">
+                <p class="text-gray-300">
+                  📍 <span class="font-medium">Pickup:</span> {{ booking.pickupLocation.address || 'Location set' }}
+                </p>
+                <p class="text-gray-300">
+                  🎯 <span class="font-medium">Drop:</span> {{ booking.dropLocation.address || 'Location set' }}
+                </p>
+              </div>
+              
+              <!-- Action Buttons for Pending -->
+              <div *ngIf="booking.status === 'PENDING'" class="flex gap-2">
+                <button 
+                  (click)="acceptBooking(booking.id!)"
+                  class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 rounded text-sm font-bold">
+                  ✓ Accept
+                </button>
+                <button 
+                  (click)="rejectBooking(booking.id!)"
+                  class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-bold">
+                  ✗ Reject
+                </button>
+              </div>
+              
+              <!-- Status Messages -->
+              <div *ngIf="booking.status === 'CONFIRMED'" class="text-sm text-green-400 font-medium text-center">
+                ✓ You accepted this request
+              </div>
+              <div *ngIf="booking.status === 'REJECTED'" class="text-sm text-red-400 font-medium text-center">
+                ✗ You rejected this request
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </div>
+  </div>
+</div>

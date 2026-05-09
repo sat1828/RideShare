@@ -1,0 +1,301 @@
+
+
+<div class="min-h-screen bg-gray-900 text-white relative overflow-hidden">
+  <!-- Animated Background -->
+  <div class="bg-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <!-- Gradient Orbs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 -left-20 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+    <div class="absolute top-1/3 -right-20 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+  </div>
+
+  <div class="relative z-10 h-screen flex flex-col md:flex-row">
+    
+    <!-- MAP SECTION - Left Side -->
+    <div class="flex-grow flex flex-col p-4 md:p-6 h-1/2 md:h-full">
+      
+      <!-- Header -->
+      <div class="glass-card p-4 mb-4 flex justify-between items-center slide-in-left">
+        <div class="flex items-center gap-3">
+          <button (click)="goBack()" 
+                  class="w-10 h-10 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 flex items-center justify-center transition-all duration-300 hover:scale-110">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+          </button>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold gradient-text">Offer a Ride</h1>
+            <p class="text-sm text-gray-400">Set your route and start earning</p>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-indigo-500/20 rounded-xl">
+          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span class="text-sm font-medium text-green-400">Live Map</span>
+        </div>
+      </div>
+
+      <!-- Map Container -->
+      <div class="flex-grow glass-card rounded-2xl overflow-hidden shadow-2xl neon-border scale-in" 
+           style="min-height: 300px;">
+        <div id="ride-map" class="w-full h-full"></div>
+      </div>
+
+      Map Legend
+      <div class="glass-card p-4 mt-4 slide-in-left" style="animation-delay: 0.2s;">
+        <h4 class="text-sm font-semibold mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Map Legend
+        </h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-purple-400 border-2 border-white shadow-lg"></div>
+            <span class="text-gray-300">Start Point</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-pink-400 border-2 border-white shadow-lg"></div>
+            <span class="text-gray-300">End Point</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-1 bg-indigo-400 rounded-full"></div>
+            <span class="text-gray-300">Your Route</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-gray-300">Click to Set</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM SECTION - Right Side -->
+    <div class="w-full md:w-[450px] bg-gray-900/50 backdrop-blur-xl border-l border-gray-800 p-6 overflow-y-auto h-1/2 md:h-full">
+      
+      <div class="slide-in-right">
+        <div class="mb-6">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center float-animation mb-4">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-white mb-1">Ride Details</h2>
+          <p class="text-sm text-gray-400">Fill in the information to create your ride</p>
+        </div>
+
+        <form [formGroup]="rideForm" (ngSubmit)="createRide()" class="space-y-5">
+          
+          <!-- Start Location -->
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-300 flex items-center gap-2">
+              <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+              </svg>
+              Start Location
+            </label>
+            <input 
+              type="text" 
+              formControlName="startSearch"
+              (input)="searchStartLocation($event)"
+              (focus)="enableStartLocationSetting()"
+              placeholder="Search or click on map"
+              class="input-glow w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 focus:outline-none transition-all">
+            
+            <div *ngIf="startSearchResults.length > 0" 
+                 class="glass-card rounded-xl mt-2 max-h-48 overflow-y-auto scale-in">
+              <div *ngFor="let result of startSearchResults; let i = index" 
+                   (click)="selectStartResult(result)"
+                   class="p-3 hover:bg-indigo-500/20 cursor-pointer transition-colors border-b border-gray-700 last:border-0"
+                   [style.animation-delay]="(i * 0.05) + 's'">
+                <p class="text-sm text-white font-medium truncate">{{ result.display_name }}</p>
+              </div>
+            </div>
+            
+            <p *ngIf="startLocation" class="text-xs text-green-400 flex items-center gap-1 mt-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              Location set: {{ startLocation.lat.toFixed(4) }}, {{ startLocation.lng.toFixed(4) }}
+            </p>
+          </div>
+
+          <!-- End Location -->
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-300 flex items-center gap-2">
+              <svg class="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+              </svg>
+              End Location
+            </label>
+            <input 
+              type="text" 
+              formControlName="endSearch"
+              (input)="searchEndLocation($event)"
+              (focus)="enableEndLocationSetting()"
+              placeholder="Search or click on map"
+              class="input-glow w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 focus:outline-none transition-all">
+            
+            <div *ngIf="endSearchResults.length > 0" 
+                 class="glass-card rounded-xl mt-2 max-h-48 overflow-y-auto scale-in">
+              <div *ngFor="let result of endSearchResults; let i = index" 
+                   (click)="selectEndResult(result)"
+                   class="p-3 hover:bg-pink-500/20 cursor-pointer transition-colors border-b border-gray-700 last:border-0"
+                   [style.animation-delay]="(i * 0.05) + 's'">
+                <p class="text-sm text-white font-medium truncate">{{ result.display_name }}</p>
+              </div>
+            </div>
+            
+            <p *ngIf="endLocation" class="text-xs text-green-400 flex items-center gap-1 mt-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              Location set: {{ endLocation.lat.toFixed(4) }}, {{ endLocation.lng.toFixed(4) }}
+            </p>
+          </div>
+
+          <!-- Price & Seats Row -->
+          <div class="grid grid-cols-2 gap-4">
+            
+            <!-- Price -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-300 flex items-center gap-2">
+                <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Price (₹)
+              </label>
+              <input 
+                type="number" 
+                formControlName="price"
+                min="1"
+                placeholder="50"
+                class="input-glow w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 focus:outline-none">
+            </div>
+
+            <!-- Seats -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-300 flex items-center gap-2">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                Seats
+              </label>
+              <select 
+                formControlName="availableSeats"
+                class="input-glow w-full px-4 py-3 rounded-xl text-white focus:outline-none appearance-none bg-no-repeat bg-right"
+                style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23999%22%2F%3E%3C%2Fsvg%3E'); background-position: right 12px center; background-size: 16px;">
+                <option value="1">1 Seat</option>
+                <option value="2">2 Seats</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Departure Time -->
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-300 flex items-center gap-2">
+              <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Departure Time
+            </label>
+            <input 
+              type="datetime-local" 
+              formControlName="departureTime"
+              class="input-glow w-full px-4 py-3 rounded-xl text-white focus:outline-none">
+          </div>
+
+          <!-- Messages -->
+          <div *ngIf="errorMessage" class="scale-in">
+            <div class="bg-red-500/20 border-2 border-red-500 text-red-200 px-4 py-3 rounded-xl flex items-center gap-3">
+              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span class="text-sm font-medium">{{ errorMessage }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="successMessage" class="scale-in">
+            <div class="bg-green-500/20 border-2 border-green-500 text-green-200 px-4 py-3 rounded-xl flex items-center gap-3">
+              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span class="text-sm font-medium">{{ successMessage }}</span>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button 
+            type="submit" 
+            [disabled]="!rideForm.valid || !startLocation || !endLocation || isCreatingRide"
+            class="btn-gradient-primary w-full py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-3 shimmer">
+            <svg *ngIf="!isCreatingRide" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <span *ngIf="!isCreatingRide">Create Ride & Go Online</span>
+            <div *ngIf="isCreatingRide" class="flex items-center gap-3">
+              <div class="spinner-small"></div>
+              <span>Creating your ride...</span>
+            </div>
+          </button>
+
+          <!-- Info Box -->
+          <div class="glass-card p-4 border-l-4 border-indigo-500">
+            <div class="flex gap-3">
+              <svg class="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div class="text-sm text-gray-300">
+                <p class="font-semibold mb-1">Quick Tips:</p>
+                <ul class="space-y-1 text-xs text-gray-400">
+                  <li>• Set accurate pickup and drop locations</li>
+                  <li>• Price fairly based on distance</li>
+                  <li>• Be on time for your departure</li>
+                  <li>• Accept bookings promptly</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+</style>
