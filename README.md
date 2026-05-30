@@ -1,181 +1,513 @@
-A modern, intelligent ride-sharing platform designed exclusively for students to connect, share rides, and travel affordably across campus and city.
+<div align="center">
+
+<br/>
+
+```
+██████╗ ██╗██████╗ ███████╗███████╗██╗  ██╗ █████╗ ██████╗ ███████╗
+██╔══██╗██║██╔══██╗██╔════╝██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝
+██████╔╝██║██║  ██║█████╗  ███████╗███████║███████║██████╔╝█████╗
+██╔══██╗██║██║  ██║██╔══╝  ╚════██║██╔══██║██╔══██║██╔══██╗██╔══╝
+██║  ██║██║██████╔╝███████╗███████║██║  ██║██║  ██║██║  ██║███████╗
+╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
+```
+
+**Campus carpooling — engineered from scratch.**
+
+<br/>
+
+[![Angular](https://img.shields.io/badge/Angular_17-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.io/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.2-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/)
+[![MySQL](https://img.shields.io/badge/MySQL_8.0-005C84?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org/)
+[![Java](https://img.shields.io/badge/Java_17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Leaflet](https://img.shields.io/badge/Leaflet.js-199900?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
+[![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-7EBC6F?style=for-the-badge&logo=openstreetmap&logoColor=white)](https://openstreetmap.org/)
+
+<br/>
+
+> Riders set routes. Pillions find them. A **500-metre proximity algorithm** decides if it's a match.
+> No paid APIs. No vendor lock-in. Zero cloud bill.
+
+<br/>
+
+</div>
+
+---
+
+## The Problem
+
+Students in the same city commuting to the same campus in separate vehicles — not because they didn't want to share, but because there was no trustworthy, purpose-built way to coordinate it. High daily transport costs, unreliable public transit, and zero visibility into who's travelling which route.
+
+## The Solution
+
+A full-stack web platform where **Riders** (vehicle owners) publish routes with real road-following paths, and **Pillions** (passengers) search by their actual pickup and drop points. The backend runs a spatial algorithm that checks whether a pillion's location falls within 500 metres of a rider's stored route — in the correct direction of travel.
+
+---
+
+## Screens
+
+### 01 — Login
+
+![Login](screenshots/01-login.gif)
+
+*Glassmorphism card over `#0f1117` dark base. Sky-blue `#38bdf8` → indigo `#818cf8` gradient wordmark. Email/password fields animate active state. Sign In button fades in after interaction.*
+
+---
+
+### 02 — Register & Role Selection
+
+![Register](screenshots/02-register.gif)
+
+*Two-step form. First/last name, email, password — then a role picker: Rider (vehicle owner) or Pillion (passenger). Active card lights with a `#38bdf8` border and glow. Inactive stays in muted glass. Role drives the entire backend permission model.*
+
+---
+
+### 03 — Offer a Ride
+
+![Offer Ride](screenshots/03-offer-ride.gif)
+
+*Left panel: start/end location search (Nominatim geocoding), price, seats, departure time, vehicle. Right panel: Leaflet/OSM dark map. As soon as both endpoints are set, OSRM calculates the road-following route and the blue polyline **draws itself onto the map**. On submit, 20–50 waypoints are extracted from the geometry and saved row-by-row into `ride_routes` — the backbone of the proximity engine.*
+
+---
+
+### 04 — Find a Ride
+
+![Find Ride](screenshots/04-find-ride.gif)
+
+*The core feature. Pillion sets pickup and drop on the map. Yellow `#eab308` dashed circles pulse at both points showing the 500-metre search zones. The Haversine + point-to-segment algorithm runs server-side: rides where **both** points fall within 500m of the stored route — in order — appear in the sidebar. Three matched rides shown with price, seats, departure time, and a one-tap Book Now.*
+
+---
+
+### 05 — Rider Dashboard
+
+![Dashboard](screenshots/05-dashboard.gif)
+
+*Stats row: Active Rides · Confirmed · Pending · Earnings — each tile colour-coded to its domain colour. Active ride cards below, each with departure info, seat count, and a direct link to its booking queue.*
+
+---
+
+### 06 — Booking Management
+
+![Booking Management](screenshots/06-booking-mgmt.gif)
+
+*Rider sees every pillion's pickup and drop plotted as coloured zone-rings on the live map — PENDING in amber, CONFIRMED in green. One-click Accept flashes the card green and transitions status. Reject dims it red. Both update the `bookings` table via `PUT /api/bookings/{id}/status`.*
+
+---
+
+### 07 — Pillion Booking History
+
+![Booking History](screenshots/07-booking-history.gif)
+
+*All three states in one view: green CONFIRMED, amber PENDING, red-muted REJECTED. Each card shows rider name, full route, departure time, price, and pickup point. Summary pills at the top count each state.*
+
+---
+
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Angular 17 SPA  (Browser)                        │
+│                                                                     │
+│  AuthGuard  ──►  Route Protection for all private pages             │
+│  RxJS Streams ─►  Async map events, booking status polling          │
+│  Leaflet.js ──►  Interactive map: click-to-set, route polyline      │
+│                                                                     │
+│  /login         /register       /offer-ride      /find-ride         │
+│  /dashboard     /booking-management/{id}         /my-bookings       │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │  HTTP REST  (JSON)
+                           │  Content-Type: application/json
+┌──────────────────────────▼──────────────────────────────────────────┐
+│              Spring Boot 3.2  ·  sidecar-backend                    │
+│                                                                     │
+│  RideController      →  /api/rides/**                               │
+│  UserController      →  /api/users/register  /api/users/login       │
+│  BookingController   →  /api/bookings/**                            │
+│                                                                     │
+│  RideService         ←─  Proximity match engine lives here          │
+│  UserService         ←─  Auth logic                                 │
+│  BookingService      ←─  PENDING → CONFIRMED / REJECTED lifecycle   │
+│                                                                     │
+│  JPA / Hibernate ORM  ·  CorsConfig  ·  application.properties      │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │  JDBC
+┌──────────────────────────▼──────────────────────────────────────────┐
+│                      MySQL 8.0                                      │
+│   users  ┄  rides  ┄  ride_routes  ┄  bookings                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+External APIs (zero cost, no key required)
+  Nominatim  →  address ↔ lat/lng geocoding
+  OSRM       →  road-accurate route + ordered waypoints
+  OSM Tiles  →  Leaflet map tile rendering
+```
+
+---
+
+## Project Structure
+
+```
+RideShare/
+│
+├── sidecar-backend/
+│   └── src/main/java/com/rideshare/
+│       ├── controller/
+│       │   ├── RideController.java        POST /api/rides, GET /api/rides/**
+│       │   ├── UserController.java        POST /api/users/register + /login
+│       │   └── BookingController.java     POST/GET/PUT /api/bookings/**
+│       │
+│       ├── service/
+│       │   ├── RideService.java           Proximity algorithm, OSRM integration
+│       │   ├── UserService.java           Authentication logic
+│       │   └── BookingService.java        Request lifecycle management
+│       │
+│       ├── repository/
+│       │   ├── RideRepository.java
+│       │   ├── UserRepository.java
+│       │   └── BookingRepository.java
+│       │
+│       ├── model/
+│       │   ├── Ride.java                  id · riderId · start/end location · lat/lng
+│       │   │                              price · seatsAvailable · departureTime · status
+│       │   ├── User.java                  id · name · email · password · role (RIDER|PILLION)
+│       │   ├── RideRoute.java             id · rideId · latitude · longitude · seqOrder
+│       │   └── Booking.java               id · rideId · pillionId · pickup/dropLat/Lng · status
+│       │
+│       ├── config/
+│       │   └── CorsConfig.java            Allows localhost:4200 during development
+│       │
+│       └── resources/
+│           └── application.properties     DB URL · JPA ddl-auto=update · server.port=8080
+│
+└── student-rideshare-frontend/
+    └── src/app/
+        ├── components/
+        │   ├── login/                     Reactive form, calls AuthService.login()
+        │   ├── register/                  Role picker + form, calls AuthService.register()
+        │   ├── offer-ride/                Leaflet map, Nominatim search, OSRM route,
+        │   │                              extracts waypoints → POST /api/rides
+        │   ├── find-ride/                 Map with 500m circles, calls POST /api/rides/search
+        │   ├── dashboard/                 Lists rider's rides, links to booking mgmt
+        │   └── booking-management/        Accept/reject per booking, map shows pickup/drop
+        │
+        ├── services/
+        │   ├── auth.service.ts            Login state · localStorage · currentUser$
+        │   ├── ride.service.ts            CRUD + /search endpoint calls
+        │   └── booking.service.ts         Create, fetch, update status
+        │
+        ├── guards/
+        │   └── auth.guard.ts              Blocks unauthenticated access to all app routes
+        │
+        └── models/
+            ├── ride.model.ts              Matches Ride.java fields exactly
+            ├── user.model.ts              Matches User.java fields exactly
+            └── booking.model.ts           Matches Booking.java fields exactly
+```
+
+---
+
+## The 500-Metre Proximity Algorithm
+
+This is the piece that makes it actually useful. Not a bounding-box check, not straight-line distance from endpoints — proper geometric proximity against every segment of a stored road-following path.
+
+```
+STEP 1 — HAVERSINE FORMULA  (great-circle distance)
+─────────────────────────────────────────────────────
+a = sin²(Δlat/2) + cos(lat₁)·cos(lat₂)·sin²(Δlng/2)
+c = 2 · atan2(√a, √(1−a))
+d = 6,371,000 · c          ← metres on Earth's surface
 
 
-📖 Project Overview
-Student RideShare is a comprehensive web-based carpooling solution that bridges the gap between students who own vehicles and those seeking affordable transportation. Built with cutting-edge technologies, the platform offers an intuitive interface for creating, discovering, and booking shared rides with smart route matching and real-time map integration.
-🎯 Problem Statement
-Students often face challenges:
+STEP 2 — POINT-TO-SEGMENT DISTANCE
+─────────────────────────────────────
+For pillion point P against route segment A→B:
 
-High transportation costs for daily commutes
-Limited public transport options
-Environmental concerns about individual vehicle usage
-Difficulty finding reliable ride-sharing partners
-Safety concerns when traveling with strangers
+  t       = clamp( dot(AP, AB) / |AB|² ,  0, 1 )
+  closest = A + t·(B−A)           ← nearest point on segment
+  dist    = haversine(P, closest)
 
-💡 Our Solution
-Student RideShare addresses these challenges by providing:
-
-A trusted platform exclusively for verified students
-Intelligent route matching within 500-meter proximity
-Real-time interactive maps for accurate location setting
-Transparent pricing set by riders themselves
-Instant booking confirmation system
-User-friendly interface with smooth animations
-Mobile-responsive design for on-the-go access
+  if dist ≤ 500 m  →  P is "on this segment of the route"
 
 
-✨ Key Features
-For Riders (Vehicle Owners)
+STEP 3 — FULL MATCH DECISION
+──────────────────────────────
+Inputs:
+  rideRoute[]   = 20–50 ordered [lat,lng] from ride_routes table
+  pillionPickup = [lat, lng]
+  pillionDrop   = [lat, lng]
 
-Create Rides Easily: Set start and end points using interactive maps or location search
-Automatic Route Calculation: Smart routing engine calculates optimal paths using real roads
-Flexible Pricing: Set your own ride prices based on distance and demand
-Booking Management: View, accept, or reject ride requests from pillion riders
-Real-time Notifications: Get notified instantly when someone books your ride
-Dashboard Analytics: Track all your active rides and booking requests in one place
+For each segment i:
+  if dist(pillionPickup, segment_i) ≤ 500m  →  pickupIndex = i
 
-For Pillion (Passengers)
+For each segment j:
+  if dist(pillionDrop, segment_j) ≤ 500m    →  dropIndex = j
 
-Smart Ride Discovery: Find rides with advanced 500-meter proximity matching
-Time-based Filtering: Search rides by preferred departure time
-Visual Route Preview: See exact routes on map before booking
-Instant Booking: Book rides with a single click
-Booking Status Tracking: Real-time updates on request status (Pending/Confirmed/Rejected)
-Multiple Search Options: Search by location name or click directly on map
+MATCH = (pickupIndex ≠ null)
+      AND (dropIndex ≠ null)
+      AND (dropIndex > pickupIndex)    ← no backtracking along the route
+```
 
-Platform Intelligence
+**Why the order check matters:** without `dropIndex > pickupIndex`, a pillion whose drop point happens to be near an earlier part of the route than their pickup would still "match" — but they'd be riding backwards. The order check eliminates that entirely.
 
-500m Proximity Algorithm: Ensures pickup and drop points are within practical walking distance from rider's route
-Route Order Validation: Automatically verifies that drop-off comes after pickup along the route
-Real-time Map Integration: Live visualization of all routes and available rides
-Smart Matching: Filters out incompatible rides to show only relevant options
-Geocoding Service: Converts addresses to coordinates and vice versa
-Route Optimization: Uses OSRM routing engine for accurate, road-following paths
+**Why 500 metres:** approximately a 6–7 minute walk. Comfortable for students carrying bags, precise enough to not surface irrelevant rides. Configurable in `RideService.java`.
 
+---
 
-🏗️ Technical Architecture
-Frontend (Angular 17)
-The client-side application provides a modern, responsive user interface with:
+## Database Schema
 
-Component-based Architecture: Modular design with reusable components
-Reactive Programming: RxJS for handling asynchronous operations
-Route Guards: Secure navigation with authentication checks
-Services Layer: Centralized business logic and API communication
-TypeScript: Strong typing for robust code quality
-Tailwind CSS: Utility-first styling for rapid UI development
-Custom Animations: Smooth transitions and visual feedback
+```sql
+-- Four tables. Clean, normalized, fully relational.
 
-Backend (Spring Boot 3.2)
-The server-side application handles all business logic:
+CREATE TABLE users (
+  id       BIGINT        PRIMARY KEY AUTO_INCREMENT,
+  name     VARCHAR(100)  NOT NULL,
+  email    VARCHAR(150)  UNIQUE NOT NULL,
+  password VARCHAR(255)  NOT NULL,
+  role     ENUM('RIDER','PILLION') NOT NULL
+);
 
-RESTful API: Clean, well-structured endpoints for all operations
-Layered Architecture: Controller → Service → Repository pattern
-JPA/Hibernate: Object-relational mapping for database operations
-Data Validation: Input validation to ensure data integrity
-Error Handling: Comprehensive exception management
-CORS Configuration: Secure cross-origin resource sharing
+CREATE TABLE rides (
+  id              BIGINT        PRIMARY KEY AUTO_INCREMENT,
+  rider_id        BIGINT        REFERENCES users(id),
+  start_location  VARCHAR(255)  NOT NULL,
+  end_location    VARCHAR(255)  NOT NULL,
+  start_lat       DOUBLE        NOT NULL,
+  start_lng       DOUBLE        NOT NULL,
+  end_lat         DOUBLE        NOT NULL,
+  end_lng         DOUBLE        NOT NULL,
+  price           DECIMAL(8,2)  NOT NULL,
+  seats_available INT           NOT NULL,
+  departure_time  DATETIME      NOT NULL,
+  status          ENUM('ACTIVE','COMPLETED','CANCELLED') DEFAULT 'ACTIVE'
+);
 
-Database (MySQL 8.0)
-Relational database storing all application data:
+-- This table is the spatial index. Without it, proximity matching is impossible.
+CREATE TABLE ride_routes (
+  id        BIGINT  PRIMARY KEY AUTO_INCREMENT,
+  ride_id   BIGINT  REFERENCES rides(id),
+  latitude  DOUBLE  NOT NULL,
+  longitude DOUBLE  NOT NULL,
+  seq_order INT     NOT NULL    -- direction matters: 0 = start, N = end
+);
 
-Users: Student accounts with role-based access
-Rides: Complete ride information with locations and status
-Ride Routes: Detailed route coordinates for proximity matching
-Bookings: All ride requests and their current status
+CREATE TABLE bookings (
+  id         BIGINT     PRIMARY KEY AUTO_INCREMENT,
+  ride_id    BIGINT     REFERENCES rides(id),
+  pillion_id BIGINT     REFERENCES users(id),
+  pickup_lat DOUBLE,
+  pickup_lng DOUBLE,
+  drop_lat   DOUBLE,
+  drop_lng   DOUBLE,
+  status     ENUM('PENDING','CONFIRMED','REJECTED') DEFAULT 'PENDING',
+  created_at TIMESTAMP  DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-External Services
+---
 
-OpenStreetMap: Provides map tiles and geographical data
-OSRM (Open Source Routing Machine): Calculates optimal driving routes
-Nominatim API: Geocoding service for location search
+## REST API
 
+### Authentication
 
-🎨 User Experience Design
-Design Philosophy
-The platform follows a dark theme with glassmorphism effects, creating a modern and elegant user experience. Key design elements include:
+| Method | Endpoint | Body | Returns |
+|--------|----------|------|---------|
+| `POST` | `/api/users/register` | `{ name, email, password, role }` | User object |
+| `POST` | `/api/users/login` | `{ email, password }` | User object |
 
+### Rides
 
-🔐 Security & Privacy
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/rides` | Create ride + persist waypoints to `ride_routes` |
+| `GET` | `/api/rides` | All active rides |
+| `GET` | `/api/rides/{id}` | Single ride with full route |
+| `GET` | `/api/rides/rider/{riderId}` | Rider's own rides (dashboard) |
+| `POST` | `/api/rides/search` | **Proximity search** — runs the matching algorithm |
 
-Password Storage: Secure password handling (ready for BCrypt hashing)
-Session Management: User authentication with local storage
-Route Protection: Guard-based access control to protected routes
-Input Sanitization: Server-side validation of all user inputs
-SQL Injection Prevention: Parameterized queries via JPA
-CORS Policy: Controlled cross-origin access
+**Search request body:**
+```json
+{
+  "pickupLat":     20.2961,
+  "pickupLng":     85.8245,
+  "dropLat":       20.3398,
+  "dropLng":       85.8041,
+  "departureTime": "2024-03-15T09:00:00"
+}
+```
 
+### Bookings
 
-🌍 How It Works
-The Complete Journey
-Creating a Ride (Rider Perspective):
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/bookings` | Create booking (status: PENDING) |
+| `GET` | `/api/bookings/ride/{rideId}` | All bookings on a ride (rider view) |
+| `GET` | `/api/bookings/pillion/{userId}` | Pillion's booking history |
+| `PUT` | `/api/bookings/{id}/status` | Rider sets CONFIRMED or REJECTED |
 
-Rider logs in and navigates to "Offer a Ride"
-Interactive map loads centered on their location (Bhubaneswar)
-Rider searches for start location or clicks directly on map
-System places a marker and allows route setting
-Rider sets end location using same method
-System automatically calculates optimal route using real roads
-Blue route line appears on map showing exact path
-Rider enters ride details (price, seats, departure time)
-System extracts route coordinates and saves to database
-Ride becomes visible to all searching pillion riders
+---
 
-Finding a Ride (Pillion Perspective):
+## End-to-End Flow
 
-Pillion logs in and navigates to "Find a Ride"
-Map loads with search interface
-Pillion sets pickup location (yellow circle shows 500m search radius)
-Pillion sets drop location
-Optionally selects preferred departure time
-System fetches all active rides from database
-Smart algorithm filters rides:
+**Rider publishes a ride:**
 
-Checks if pickup is within 500m of any ride's route
-Checks if drop is within 500m of same ride's route
-Validates that drop comes after pickup on the route
+```
+1.  Leaflet map loads centred on Bhubaneswar
+2.  Rider searches start location
+      GET nominatim.openstreetmap.org/search?q=Baramunda+Bus+Stand
+      ← [{ lat, lon, display_name }]
+      → Green pin placed on map
+3.  Rider searches end location (same flow) → Red pin
+4.  OSRM calculates road route
+      GET router.project-osrm.org/route/v1/driving/{lng,lat};{lng,lat}?geometries=geojson
+      ← { routes: [{ geometry: { coordinates: [[lng,lat], …] } }] }
+      → Blue polyline drawn on map
+5.  Rider fills price, seats, departure time, vehicle
+6.  POST /api/rides  { …fields, routeCoordinates: [[lat,lng], …] }
+7.  Spring Boot: INSERT rides row + INSERT ride_routes row per waypoint
+8.  Ride is live — discoverable by all searching pillions
+```
 
+**Pillion finds and books:**
 
-Matching rides appear on map with their routes shown
-Pillion selects desired ride from list
-Books ride with one click
+```
+1.  Pillion opens Find a Ride
+2.  Sets pickup → yellow 500m ring drawn on map
+3.  Sets drop → indigo 500m ring drawn on map
+4.  POST /api/rides/search  { pickupLat, pickupLng, dropLat, dropLng, departureTime }
+5.  Backend iterates every active ride's ride_routes:
+      → haversine segment check for pickup (≤500m?)
+      → haversine segment check for drop (≤500m?)
+      → seq_order validation (drop after pickup?)
+6.  Matched rides returned, shown as cards + route lines on map
+7.  Pillion taps Book Now
+8.  POST /api/bookings  { rideId, pickupLat, pickupLng, dropLat, dropLng }
+9.  Booking created with status PENDING
+10. Rider sees it on dashboard → accepts → PUT /api/bookings/{id}/status { status: CONFIRMED }
+11. Pillion sees CONFIRMED in booking history
+```
 
-Booking Management:
+---
 
-Booking request created with "PENDING" status
-Rider receives notification on dashboard
-Rider reviews pickup/drop locations on map
-Rider accepts or rejects the request
-Pillion receives instant status update
-If accepted, both parties can proceed with the ride
+## Tech Stack
 
+| Layer | Choice | Why this and not the alternative |
+|-------|--------|----------------------------------|
+| Frontend | Angular 17 | Strong DI, route guards, RxJS for async map events — not React's free-for-all |
+| Language | TypeScript | Type safety across service→component→template boundaries |
+| Styling | Tailwind CSS | Utility-first, no specificity wars, dark glassmorphism without custom CSS |
+| Maps | Leaflet.js + OSM | Zero cost, full control, no API key, no rate limits |
+| Routing | OSRM | Open-source, road-accurate geometry, no rate limits mid-demo |
+| Geocoding | Nominatim | Free address↔coordinate lookup, no key needed |
+| Backend | Spring Boot 3.2 | Auto-configuration, JPA integration, clean layered structure |
+| ORM | Hibernate via JPA | No raw SQL except `@Query` where needed; FK constraints enforced |
+| Database | MySQL 8.0 | Relational — ordered waypoints in `ride_routes` need FK + `seq_order` |
+| Java | 17 (LTS) | Records, text blocks, long-term support |
 
-🎯 The 500-Meter Proximity Algorithm
-Why 500 Meters?
-This distance represents a comfortable walking range (approximately 5-7 minutes walk) for students to reach pickup points and walk to their final destination from drop points.
-How It Works Mathematically
-Step 1: Route Representation
+---
 
-Rider's route is stored as array of coordinates (20-50 points)
-Each point represents a location along actual roads
+## Local Setup
 
-Step 2: Distance Calculation
+### Prerequisites
 
-Uses Haversine formula for accurate distance on Earth's curved surface
-Calculates shortest distance from pillion's point to nearest route segment
+- Java 17+
+- Node 18+ and npm
+- MySQL 8.0 running locally
 
-Step 3: Validation
-For each route segment (point A to point B):
-  1. Calculate perpendicular distance from pillion's point to line AB
-  2. If distance < 500m, point is considered "near route"
-  3. Repeat for all segments
-  
-If pickup near route AND drop near route AND (drop_index > pickup_index):
-  Result: VALID MATCH
-Else:
-  Result: NO MATCH
-Step 4: Route Order Check
+### Backend
 
-Find closest route point to pickup
-Find closest route point to drop
-Verify drop point comes after pickup in route sequence
-This ensures pillion doesn't need to backtrack
+```bash
+cd sidecar-backend
+
+# Create the database
+mysql -u root -p -e "CREATE DATABASE rideshare_db;"
+
+# Set your credentials in:
+# src/main/resources/application.properties
+#   spring.datasource.url=jdbc:mysql://localhost:3306/rideshare_db
+#   spring.datasource.username=root
+#   spring.datasource.password=YOUR_PASSWORD
+#   spring.jpa.hibernate.ddl-auto=update
+
+./mvnw spring-boot:run
+# Runs on http://localhost:8080
+# Tables are auto-created on first run
+```
+
+### Frontend
+
+```bash
+cd student-rideshare-frontend
+
+npm install
+
+ng serve
+# App at http://localhost:4200
+```
+
+---
+
+## Design System
+
+| Token | Value | Used for |
+|-------|-------|----------|
+| `--bg` | `#0f1117` | Page background |
+| `--bg2` | `#0a0d14` | Sidebar / panel background |
+| `--blue` | `#38bdf8` | Primary accent, active nav, CTA buttons |
+| `--indigo` | `#818cf8` | Secondary accent, Pillion role, drop zones |
+| `--green` | `#22c55e` | CONFIRMED state, start pins, Rider role |
+| `--red` | `#f43f5e` | REJECTED state, end pins |
+| `--amber` | `#eab308` | PENDING state, pickup zones |
+| Glass card | `rgba(255,255,255,0.05)` + `rgba(255,255,255,0.08)` border | All cards |
+| Map bg | `#161f2e` (Leaflet dark tiles) | Map panel |
+| Route line | `#38bdf8` + glow at `rgba(56,189,248,0.25)` | OSRM polyline |
+
+---
+
+## Architecture Decisions
+
+**Why store route waypoints in a separate table?**
+A single start/end lat/lng pair is useless for proximity matching anywhere mid-route. The `ride_routes` table holds 20–50 intermediate points from OSRM's geometry, each with a `seq_order` that preserves direction. The segment-distance loop runs over these. Without them, the entire matching concept breaks.
+
+**Why OSRM instead of Google Maps Directions API?**
+Zero cost, open-source, self-hostable, returns identical road-following GeoJSON geometry. For a project demoing at any time, a surprise rate-limit or billing pause is unacceptable.
+
+**Why MySQL instead of MongoDB?**
+The data is inherently relational: a booking belongs to a ride, a ride belongs to a user, route waypoints belong to a ride in strict order. Foreign keys, `seq_order` integrity, and JOIN queries are the right tool. Document nesting can't express ordered waypoints cleanly.
+
+**Why Angular instead of React?**
+Angular's built-in DI system means `AuthService`, `RideService`, and `BookingService` are injectable singletons with clean boundaries. Route guards (`auth.guard.ts`) are a first-class Angular concept — one line of configuration per protected route. The opinionated structure also made the layered backend architecture (Controller→Service→Repository) feel natural to mirror on the frontend.
+
+---
+
+## What's Next
+
+- **WebSocket notifications** — STOMP over SockJS to push booking status changes in real time instead of requiring manual refresh
+- **BCrypt password hashing** — the hook is already in `UserService.java`, needs one dependency and one method call
+- **In-app messaging** per booking — enough for coordinate coordination without exchanging phone numbers
+- **Ride ratings** — post-trip, mutual ratings build platform trust over time
+- **Admin panel** — view aggregate routes, identify high-demand corridors, flag users
+- **Firebase push notifications** — mobile booking alerts
+- **Docker Compose** — single-command local setup across backend, frontend, and MySQL
+
+---
+
+## Language Breakdown
+
+```
+TypeScript  ████████████████████░░░░░  37.9%   Angular components, services, models
+HTML        ███████████████████░░░░░░  36.7%   Angular templates
+Java        █████████░░░░░░░░░░░░░░░░  18.6%   Spring Boot backend
+CSS         ███░░░░░░░░░░░░░░░░░░░░░░   6.7%   Tailwind overrides, global styles
+JavaScript  ░░░░░░░░░░░░░░░░░░░░░░░░░   0.1%   Config files only
+```
+
+---
+
+<div align="center">
+
+*Built with obsessive attention to the routing math, the booking state machine, and every map interaction.*
+
+**Angular 17 · Spring Boot 3.2 · MySQL 8 · Leaflet · OpenStreetMap · OSRM · Nominatim · TypeScript · Java 17**
+
+</div>
