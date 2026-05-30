@@ -49,7 +49,7 @@ A full-stack web platform where **Riders** (vehicle owners) publish routes with 
 
 ### 01 — Login
 
-![Login](screenshots/01-login.gif)
+![Login](/01-login.gif)
 
 *Glassmorphism card over `#0f1117` dark base. Sky-blue `#38bdf8` → indigo `#818cf8` gradient wordmark. Email/password fields animate active state. Sign In button fades in after interaction.*
 
@@ -57,7 +57,7 @@ A full-stack web platform where **Riders** (vehicle owners) publish routes with 
 
 ### 02 — Register & Role Selection
 
-![Register](screenshots/02-register.gif)
+![Register](/02-register.gif)
 
 *Two-step form. First/last name, email, password — then a role picker: Rider (vehicle owner) or Pillion (passenger). Active card lights with a `#38bdf8` border and glow. Inactive stays in muted glass. Role drives the entire backend permission model.*
 
@@ -65,7 +65,7 @@ A full-stack web platform where **Riders** (vehicle owners) publish routes with 
 
 ### 03 — Offer a Ride
 
-![Offer Ride](screenshots/03-offer-ride.gif)
+![Offer Ride](/03-offer-ride.gif)
 
 *Left panel: start/end location search (Nominatim geocoding), price, seats, departure time, vehicle. Right panel: Leaflet/OSM dark map. As soon as both endpoints are set, OSRM calculates the road-following route and the blue polyline **draws itself onto the map**. On submit, 20–50 waypoints are extracted from the geometry and saved row-by-row into `ride_routes` — the backbone of the proximity engine.*
 
@@ -73,7 +73,7 @@ A full-stack web platform where **Riders** (vehicle owners) publish routes with 
 
 ### 04 — Find a Ride
 
-![Find Ride](screenshots/04-find-ride.gif)
+![Find Ride](/04-find-ride.gif)
 
 *The core feature. Pillion sets pickup and drop on the map. Yellow `#eab308` dashed circles pulse at both points showing the 500-metre search zones. The Haversine + point-to-segment algorithm runs server-side: rides where **both** points fall within 500m of the stored route — in order — appear in the sidebar. Three matched rides shown with price, seats, departure time, and a one-tap Book Now.*
 
@@ -81,7 +81,7 @@ A full-stack web platform where **Riders** (vehicle owners) publish routes with 
 
 ### 05 — Rider Dashboard
 
-![Dashboard](screenshots/05-dashboard.gif)
+![Dashboard](/05-dashboard.gif)
 
 *Stats row: Active Rides · Confirmed · Pending · Earnings — each tile colour-coded to its domain colour. Active ride cards below, each with departure info, seat count, and a direct link to its booking queue.*
 
@@ -89,7 +89,7 @@ A full-stack web platform where **Riders** (vehicle owners) publish routes with 
 
 ### 06 — Booking Management
 
-![Booking Management](screenshots/06-booking-mgmt.gif)
+![Booking Management](/06-booking-mgmt.gif)
 
 *Rider sees every pillion's pickup and drop plotted as coloured zone-rings on the live map — PENDING in amber, CONFIRMED in green. One-click Accept flashes the card green and transitions status. Reject dims it red. Both update the `bookings` table via `PUT /api/bookings/{id}/status`.*
 
@@ -97,7 +97,7 @@ A full-stack web platform where **Riders** (vehicle owners) publish routes with 
 
 ### 07 — Pillion Booking History
 
-![Booking History](screenshots/07-booking-history.gif)
+![Booking History](/07-booking-history.gif)
 
 *All three states in one view: green CONFIRMED, amber PENDING, red-muted REJECTED. Each card shows rider name, full route, departure time, price, and pickup point. Summary pills at the top count each state.*
 
